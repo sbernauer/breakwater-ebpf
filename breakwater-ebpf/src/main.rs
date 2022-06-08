@@ -3,10 +3,14 @@
 
 use aya_bpf::{
     bindings::xdp_action,
-    macros::xdp,
-    programs::XdpContext,
+    macros::{xdp, map},
+    programs::XdpContext, maps::Array,
 };
 use aya_log_ebpf::info;
+use breakwater_common::{SCREEN_WIDTH, SCREEN_HEIGHT};
+
+#[map(name = "FRAMEBUFFER")]
+static mut FB: Array<u32> = Array::with_max_entries(SCREEN_WIDTH * SCREEN_HEIGHT, 0);
 
 #[xdp(name="breakwater")]
 pub fn breakwater(ctx: XdpContext) -> u32 {

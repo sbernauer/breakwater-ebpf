@@ -1,15 +1,21 @@
+use std::time::Duration;
+
 use anyhow::Context;
-use aya::programs::{Xdp, XdpFlags};
-use aya::{include_bytes_aligned, Bpf};
+use aya::{
+    include_bytes_aligned,
+    maps::Array,
+    programs::{Xdp, XdpFlags},
+    Bpf,
+};
 use aya_log::BpfLogger;
 use clap::Parser;
 use log::info;
 use simplelog::{ColorChoice, ConfigBuilder, LevelFilter, TermLogger, TerminalMode};
-use tokio::signal;
+use tokio::{signal, time};
 
 #[derive(Debug, Parser)]
 struct Opt {
-    #[clap(short, long, default_value = "eth0")]
+    #[clap(short, long, default_value = "lo")]
     iface: String,
 }
 
@@ -44,6 +50,15 @@ async fn main() -> Result<(), anyhow::Error> {
     program.load()?;
     program.attach(&opt.iface, XdpFlags::default())
         .context("failed to attach the XDP program with default flags - try changing XdpFlags::default() to XdpFlags::SKB_MODE")?;
+
+    let fb: Array<_, u32> = Array::try_from(bpf.map("FRAMEBUFFER")?)?;
+    tokio::spawn(async move {
+        let mut interval = time::interval(Duration::from_secs(1));
+        loop {
+            println!("First element is {}", fb.get(&0, 0).unwrap());
+            interval.tick().await;
+        }
+    });
 
     info!("Waiting for Ctrl-C...");
     signal::ctrl_c().await?;

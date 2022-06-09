@@ -4,9 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-aya-bpf = { git = "https://github.com/aya-rs/aya", branch = "main" } # As of 2022-05-08 we need to stay on main otherwise we get compilation errors
+aya-bpf = { git = "https://github.com/sbernauer/aya", branch = "array-set" } # As of 2022-05-08 we need to stay on main otherwise we get compilation errors
 aya-log-ebpf = { git = "https://github.com/aya-rs/aya-log", rev = "aya-log-v0.1.10" }
 breakwater-common = { path = "../breakwater-common" }
+memoffset = "0.6.5"
 
 [[bin]]
 name = "breakwater"

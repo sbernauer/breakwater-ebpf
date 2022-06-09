@@ -45,7 +45,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let mut bpf = Bpf::load(include_bytes_aligned!(
         "../../target/bpfel-unknown-none/release/breakwater"
     ))?;
-    BpfLogger::init(&mut bpf)?;
+    // BpfLogger::init(&mut bpf)?;
     let program: &mut Xdp = bpf.program_mut("breakwater").unwrap().try_into()?;
     program.load()?;
     program.attach(&opt.iface, XdpFlags::default())
@@ -55,8 +55,8 @@ async fn main() -> Result<(), anyhow::Error> {
     tokio::spawn(async move {
         let mut interval = time::interval(Duration::from_secs(1));
         loop {
-            println!("First element is {}", fb.get(&0, 0).unwrap());
             interval.tick().await;
+            println!("First element is {}", fb.get(&0, 0).unwrap());
         }
     });
 

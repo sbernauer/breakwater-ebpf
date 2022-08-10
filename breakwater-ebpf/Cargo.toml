@@ -10,8 +10,8 @@ aya-log = "0.1"
 breakwater-ebpf-common = { path = "../breakwater-ebpf-common", features=["user"] }
 anyhow = "1.0.42"
 clap = { version = "3.1", features = ["derive"] }
-env_logger = "0.9"
 log = "0.4"
+simplelog = "0.12"
 tokio = { version = "1.18", features = ["macros", "rt", "rt-multi-thread", "net", "signal"] }
 
 [[bin]]

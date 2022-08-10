@@ -11,9 +11,9 @@ pub const FRAMEBUFFER_CHUNK_SIZE_BYTES: u16 = 32_768; // Must be a multiple of 4
 
 #[repr(C)]
 #[derive(Clone, Copy)]
-pub struct Framebuffer {
+pub struct FramebufferChunk {
     pub pixels: [u32; FRAMEBUFFER_CHUNK_SIZE_BYTES as usize / 4],
 }
 
 #[cfg(feature = "user")]
-unsafe impl aya::Pod for Framebuffer {}
+unsafe impl aya::Pod for FramebufferChunk {}

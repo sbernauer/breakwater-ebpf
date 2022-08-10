@@ -1,14 +1,13 @@
-use std::time::Duration;
-
 use anyhow::Context;
 use aya::maps::PerCpuArray;
 use aya::programs::{Xdp, XdpFlags};
 use aya::{include_bytes_aligned, util::nr_cpus, Bpf};
-use breakwater_ebpf_common::{Framebuffer, FRAMEBUFFER_CHUNK_SIZE_BYTES};
+use breakwater_ebpf_common::{FramebufferChunk, FRAMEBUFFER_CHUNK_SIZE_BYTES};
 use clap::Parser;
 use log::{info, LevelFilter};
 use rlimit::{getrlimit, Resource};
 use simplelog::{ColorChoice, ConfigBuilder, TermLogger, TerminalMode};
+use std::time::Duration;
 use tokio::signal;
 
 #[derive(Debug, Parser)]
@@ -60,12 +59,12 @@ async fn main() -> Result<(), anyhow::Error> {
     program.attach(&opt.iface, XdpFlags::default())
         .context("failed to attach the XDP program with default flags - try changing XdpFlags::default() to XdpFlags::SKB_MODE")?;
 
-    let framebuffer_map: PerCpuArray<_, Framebuffer> =
-        PerCpuArray::try_from(bpf.map_mut("FRAMEBUFFER")?)?;
+    let framebuffer_chunks_map: PerCpuArray<_, FramebufferChunk> =
+        PerCpuArray::try_from(bpf.map_mut("FRAMEBUFFER_CHUNKS")?)?;
 
     tokio::spawn(async move {
         loop {
-            let framebuffer_chunks = framebuffer_map
+            let framebuffer_chunks = framebuffer_chunks_map
                 .get(&0, 0)
                 .expect("Failed to get framebuffer chunk from ebpf map");
             framebuffer_chunks

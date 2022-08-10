@@ -26,3 +26,25 @@ cargo build
 ```bash
 cargo xtask run
 ```
+
+## Test using loopback interface
+There might be a better solution to route ::/64 to lo but i couldn't get it to work.
+
+```bash
+ip a s dev lo
+ip -6 r s dev lo
+
+sudo ip a a 2000::1:0:0:1/64 dev lo
+sudo ip a a 2000::0:0:1234:5600/64 dev lo
+sudo ip a a 2000::0:1:1234:5600/64 dev lo
+sudo ip a a 2000::1:0:1234:5600/64 dev lo
+sudo ip a a 2000::1:1:1234:5600/64 dev lo
+sudo ip a a 2000::2:0:1234:5600/64 dev lo
+sudo ip a a 2000::2:1:1234:5600/64 dev lo
+sudo ip a a 2000::3:0:1234:5600/64 dev lo
+sudo ip a a 2000::3:1:1234:5600/64 dev lo
+sudo ip a a 2000::4:0:1234:5600/64 dev lo
+sudo ip a a 2000::4:4:1234:5600/64 dev lo
+sudo ip a a 2000::5:0:1234:5600/64 dev lo
+sudo ip a a 2000::5:1:1234:5600/64 dev lo
+```

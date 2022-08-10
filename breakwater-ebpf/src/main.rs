@@ -4,7 +4,6 @@ use anyhow::Context;
 use aya::maps::PerCpuArray;
 use aya::programs::{Xdp, XdpFlags};
 use aya::{include_bytes_aligned, util::nr_cpus, Bpf};
-use aya_log::BpfLogger;
 use breakwater_ebpf_common::{Framebuffer, FRAMEBUFFER_CHUNK_SIZE_BYTES};
 use clap::Parser;
 use log::{info, LevelFilter};
@@ -55,7 +54,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let mut bpf = Bpf::load(include_bytes_aligned!(
         "../../target/bpfel-unknown-none/release/breakwater-ebpf"
     ))?;
-    BpfLogger::init(&mut bpf)?;
+
     let program: &mut Xdp = bpf.program_mut("breakwater_ebpf").unwrap().try_into()?;
     program.load()?;
     program.attach(&opt.iface, XdpFlags::default())
@@ -78,7 +77,7 @@ async fn main() -> Result<(), anyhow::Error> {
                         &framebuffer_chunk.pixels[..10]
                     );
                 });
-            tokio::time::sleep(Duration::from_secs(1)).await;
+            tokio::time::sleep(Duration::from_secs(2)).await;
         }
     });
 

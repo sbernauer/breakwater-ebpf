@@ -11,7 +11,7 @@ use aya_bpf::{
     programs::XdpContext,
 };
 
-use breakwater_ebpf_common::{FramebufferChunk, FRAMEBUFFER_CHUNK_SIZE_BYTES, HEIGHT, WIDTH};
+use breakwater_ebpf_common::{FramebufferChunk, FRAMEBUFFER_CHUNK_SIZE, HEIGHT, WIDTH};
 use helpers::{ptr_at, ETH_P_IP6};
 use memoffset::offset_of;
 
@@ -22,7 +22,7 @@ use crate::{
 
 #[map(name = "FRAMEBUFFER_CHUNKS")]
 static mut FRAMEBUFFER_CHUNKS: PerCpuArray<FramebufferChunk> = PerCpuArray::<_>::with_max_entries(
-    WIDTH as u32 * HEIGHT as u32 / FRAMEBUFFER_CHUNK_SIZE_BYTES as u32 + 1,
+    WIDTH as u32 * HEIGHT as u32 / FRAMEBUFFER_CHUNK_SIZE as u32 + 1,
     0,
 );
 
@@ -58,10 +58,10 @@ fn try_breakwater_ebpf(ctx: XdpContext) -> Result<u32, ()> {
 #[inline]
 fn set_pixel(x: u16, y: u16, rgb: u32) {
     let pixel_index = x as u32 + y as u32 * WIDTH as u32;
-    let chunk = pixel_index / FRAMEBUFFER_CHUNK_SIZE_BYTES as u32;
+    let chunk = pixel_index / FRAMEBUFFER_CHUNK_SIZE as u32;
     unsafe {
         if let Some(chunk) = FRAMEBUFFER_CHUNKS.get_ptr_mut(chunk) {
-            let pixel_index_within_chunk = pixel_index % (FRAMEBUFFER_CHUNK_SIZE_BYTES / 4) as u32;
+            let pixel_index_within_chunk = pixel_index % FRAMEBUFFER_CHUNK_SIZE as u32;
             (*chunk).pixels[pixel_index_within_chunk as usize] = rgb;
         }
     }

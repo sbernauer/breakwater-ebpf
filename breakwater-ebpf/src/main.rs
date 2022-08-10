@@ -2,7 +2,7 @@ use anyhow::Context;
 use aya::maps::PerCpuArray;
 use aya::programs::{Xdp, XdpFlags};
 use aya::{include_bytes_aligned, util::nr_cpus, Bpf};
-use breakwater_ebpf_common::{FramebufferChunk, FRAMEBUFFER_CHUNK_SIZE_BYTES};
+use breakwater_ebpf_common::FramebufferChunk;
 use clap::Parser;
 use log::{info, LevelFilter};
 use rlimit::{getrlimit, Resource};
@@ -18,12 +18,6 @@ struct Opt {
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    assert_eq!(
-        FRAMEBUFFER_CHUNK_SIZE_BYTES % 4,
-        0,
-        "The value of FRAMEBUFFER_CHUNK_SIZE_BYTES must be a multiple of 4 as we are storing u32 in it"
-    );
-
     let opt = Opt::parse();
 
     TermLogger::init(

@@ -1,11 +1,15 @@
-use aya::{include_bytes_aligned, Bpf, util::nr_cpus};
+use std::time::Duration;
+
 use anyhow::Context;
+use aya::maps::PerCpuArray;
 use aya::programs::{Xdp, XdpFlags};
+use aya::{include_bytes_aligned, util::nr_cpus, Bpf};
 use aya_log::BpfLogger;
+use breakwater_ebpf_common::{Framebuffer, FRAMEBUFFER_CHUNK_SIZE_BYTES};
 use clap::Parser;
 use log::{info, LevelFilter};
 use rlimit::{getrlimit, Resource};
-use simplelog::{TermLogger, ConfigBuilder, ColorChoice, TerminalMode};
+use simplelog::{ColorChoice, ConfigBuilder, TermLogger, TerminalMode};
 use tokio::signal;
 
 #[derive(Debug, Parser)]
@@ -16,6 +20,12 @@ struct Opt {
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
+    assert_eq!(
+        FRAMEBUFFER_CHUNK_SIZE_BYTES % 4,
+        0,
+        "The value of FRAMEBUFFER_CHUNK_SIZE_BYTES must be a multiple of 4 as we are storing u32 in it"
+    );
+
     let opt = Opt::parse();
 
     TermLogger::init(
@@ -50,6 +60,27 @@ async fn main() -> Result<(), anyhow::Error> {
     program.load()?;
     program.attach(&opt.iface, XdpFlags::default())
         .context("failed to attach the XDP program with default flags - try changing XdpFlags::default() to XdpFlags::SKB_MODE")?;
+
+    let framebuffer_map: PerCpuArray<_, Framebuffer> =
+        PerCpuArray::try_from(bpf.map_mut("FRAMEBUFFER")?)?;
+
+    tokio::spawn(async move {
+        loop {
+            let framebuffer_chunks = framebuffer_map
+                .get(&0, 0)
+                .expect("Failed to get framebuffer chunk from ebpf map");
+            framebuffer_chunks
+                .iter()
+                .enumerate()
+                .for_each(|(cpu_id, framebuffer_chunk)| {
+                    info!(
+                        "Framebuffer from core {cpu_id} (first 10 bytes): {:?}",
+                        &framebuffer_chunk.pixels[..10]
+                    );
+                });
+            tokio::time::sleep(Duration::from_secs(1)).await;
+        }
+    });
 
     info!("Waiting for Ctrl-C...");
     signal::ctrl_c().await?;

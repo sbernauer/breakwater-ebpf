@@ -1,0 +1,2 @@
+[workspace]
+members = ["breakwater-ebpf", "breakwater-ebpf-common", "xtask"]

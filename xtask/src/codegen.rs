@@ -2,7 +2,7 @@ use aya_gen::generate::InputFile;
 use std::{fs::File, io::Write, path::PathBuf};
 
 pub fn generate() -> Result<(), anyhow::Error> {
-    let names: Vec<&str> = vec!["ethhdr", "iphdr"];
+    let names: Vec<&str> = vec!["ethhdr", "iphdr", "ipv6hdr"];
     let dir = PathBuf::from("breakwater-ebpf-ebpf/src");
 
     let bindings = aya_gen::generate(

@@ -7,6 +7,7 @@ edition = "2021"
 aya-bpf = { git = "https://github.com/aya-rs/aya", branch = "main" }
 aya-log-ebpf = { git = "https://github.com/aya-rs/aya", branch = "main" }
 breakwater-ebpf-common = { path = "../breakwater-ebpf-common" }
+memoffset = "0.6"
 
 [[bin]]
 name = "breakwater-ebpf"

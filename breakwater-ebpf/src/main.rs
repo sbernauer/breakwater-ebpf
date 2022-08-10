@@ -1,9 +1,10 @@
-use aya::{include_bytes_aligned, Bpf};
+use aya::{include_bytes_aligned, Bpf, util::nr_cpus};
 use anyhow::Context;
 use aya::programs::{Xdp, XdpFlags};
 use aya_log::BpfLogger;
 use clap::Parser;
 use log::{info, LevelFilter};
+use rlimit::{getrlimit, Resource};
 use simplelog::{TermLogger, ConfigBuilder, ColorChoice, TerminalMode};
 use tokio::signal;
 
@@ -26,6 +27,11 @@ async fn main() -> Result<(), anyhow::Error> {
         TerminalMode::Mixed,
         ColorChoice::Auto,
     )?;
+
+    let nr_cpus = nr_cpus()?;
+    info!("System has {nr_cpus} cores");
+    let current_memlock_limits = getrlimit(Resource::MEMLOCK)?;
+    info!("Current locked memory limits: {current_memlock_limits:?}");
 
     // This will include your eBPF object file as raw bytes at compile-time and load it at
     // runtime. This approach is recommended for most real-world use cases. If you would
